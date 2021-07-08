@@ -39,8 +39,8 @@ routes.get('/signin', async (req, res) => {
 });
 
 routes.get('/messages', async (req, res) => {
-    const data = await messagesDB.get();
-    res.send(data);
+    const response = await messagesDB.get();
+    res.send(response);
 });
 
 routes.post('/message', async (req, res) => {
@@ -55,8 +55,46 @@ routes.post('/message', async (req, res) => {
     res.send(data);
 });
 
-routes.put('/message/:id', async (req, res) => {});
+routes.put('/message/:id', async (req, res) => {
+    const { id } = req.params;
+    let response = await messagesDB.doc(id).get();
+    if(response.exists) {
+        const { user_id, message } = req.body;
+        if(user_id === response.data().user_id) {
+            const date = + new Date();
+            const data = await messagesDB.doc(id).set({
+                message,
+                updated_at: date
+            }, { merge: true });
+            res.send({ status: true, message: 'updated' })
+        } else {
+            res.status(401).send({ status: false, error: 'Unauthorized' })
+        }
+    } else {
+        res.status(404).send({ error: `document id ${id} not found`, status: false });
+    }
+});
 
-routes.get('/message/:id', async (req, res) => {})
+routes.get('/message/:id', async (req, res) => {
+    const { id } = req.params;
+    const response = await messagesDB.doc(id).get();
+    if(response.exists) {
+        res.send(response.data())
+    } else {
+        res.status(404).send({ error: `document id ${id} not found`, status: false });
+    }
+})
+
+routes.delete('/message/:id', async (req, res) => {
+    const id = req.params.id;
+    const { user_id } = req.body;
+    const response = await messagesDB.doc(id).get();
+    if(response.exists && user_id === response.data().user_id) {
+        await messagesDB.doc(id).delete();
+        res.send({ status: true, message: 'deleted' });
+    } else {
+        res.status(401).send({ status: false, error: 'Unauthorized' });
+    }
+});
 
 export default routes;
