@@ -9,7 +9,7 @@ var userLogged;
 
 const api = express();
 api.use(express.json());
-api.get('/', (_, res) => res.send({ 'message': process.env.apiKey }));
+api.get('/', (_, res) => res.send({ 'message': 'API Up' }));
 api.get("/terms", (req, res) => {
     return res.json({
         message: "Termos de Uso"
