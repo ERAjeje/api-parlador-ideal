@@ -2,7 +2,6 @@ import express from 'express';
 import { usersDB, messagesDB } from './db.js';
 import { encrypt, decrypt } from './services/cypto.js';
 
-
 const routes = express();
 routes.use(express.json());
 
@@ -38,12 +37,31 @@ routes.get('/signin', async (req, res) => {
     }
 });
 
-routes.get('/messages', async (req, res) => {
-    const response = await messagesDB.get();
-    res.send(response);
+const auth = function (req, res, next) {
+    const token = req.headers.authorization
+    if(token) {
+        if(process.env.SECRET === token.split(" ")[1])
+            next();
+        else
+            res.status(401).send({ status: false, message: 'Unauthorized' });
+    } else {
+        res.status(401).send({ status: false, message: 'Unauthorized' });
+    }
+};
+
+routes.get('/messages', auth, async (req, res) => {
+    const response = (await messagesDB.get()).docs;
+    const data = response.map(item => {
+        const r = {
+            id: item._ref._path.segments[1],
+            ...item.data()
+        }
+        return r;
+    });
+    res.send(data);
 });
 
-routes.post('/message', async (req, res) => {
+routes.post('/message', auth, async (req, res) => {
     const date = + new Date();
     const data = {
         user_id: req.body.user_id,
@@ -55,7 +73,7 @@ routes.post('/message', async (req, res) => {
     res.send(data);
 });
 
-routes.put('/message/:id', async (req, res) => {
+routes.put('/message/:id', auth, async (req, res) => {
     const { id } = req.params;
     let response = await messagesDB.doc(id).get();
     if(response.exists) {
@@ -75,7 +93,7 @@ routes.put('/message/:id', async (req, res) => {
     }
 });
 
-routes.get('/message/:id', async (req, res) => {
+routes.get('/message/:id', auth, async (req, res) => {
     const { id } = req.params;
     const response = await messagesDB.doc(id).get();
     if(response.exists) {
@@ -85,7 +103,7 @@ routes.get('/message/:id', async (req, res) => {
     }
 })
 
-routes.delete('/message/:id', async (req, res) => {
+routes.delete('/message/:id', auth, async (req, res) => {
     const id = req.params.id;
     const { user_id } = req.body;
     const response = await messagesDB.doc(id).get();

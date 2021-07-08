@@ -5,8 +5,6 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-var userLogged;
-
 const api = express();
 api.use(express.json());
 api.get('/', (_, res) => res.send({ 'message': 'API Up' }));
