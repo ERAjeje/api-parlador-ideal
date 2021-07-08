@@ -1,0 +1,22 @@
+{
+  "name": "api-parlador-ideal",
+  "version": "1.0.0",
+  "description": "API for back-end in app Parlador Ideal",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "server": "nodemon index.js"
+  },
+  "author": "Edson Ajeje",
+  "license": "MIT",
+  "dependencies": {
+    "bcrypt": "^5.0.1",
+    "dotenv-safe": "^8.2.0",
+    "express": "^4.17.1",
+    "firebase": "^8.7.0",
+    "firebase-admin": "^9.10.0",
+    "firebaseui": "^4.8.0",
+    "jsonwebtoken": "^8.5.1"
+  },
+  "type": "module"
+}
